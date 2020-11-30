@@ -14,6 +14,19 @@ let finisheds = [];
 
 // 이하는 pending 관련 함수
 
+function sendPending(event) {
+  const checkBtn = event.target;
+  const li = checkBtn.parentNode;
+  // li 내 span의 text값을 가져와 "finished" 목록에 저장
+  const text = li.querySelector("span").innerText;
+  pdList.removeChild(li);
+  paintFinished(text);
+  const cleanPendings = pendings.filter(function (pending) {
+    return pending.id !== parseInt(li.id);
+  });
+  pendings = cleanPendings;
+  savePending();
+}
 function deletePending(event) {
   const delBtn = event.target;
   const li = delBtn.parentNode;
@@ -33,8 +46,7 @@ function paintPending(text) {
   delBtn.value = "❌";
   delBtn.addEventListener("click", deletePending);
   finBtn.value = "✔";
-  finBtn.addEventListener("click", deletePending);
-  finBtn.addEventListener("click", paintFinished);
+  finBtn.addEventListener("click", sendPending);
   span.innerText = text;
   pendingLi.appendChild(span);
   pendingLi.appendChild(delBtn);
@@ -72,9 +84,9 @@ function deleteFinished(event) {
     return finished.id !== parseInt(li.id);
   });
   finisheds = cleanFinisheds;
-  savePending();
+  saveFinished();
 }
-function paintFinished() {
+function paintFinished(text) {
   const finishedLi = document.createElement("li");
   const delBtn = document.createElement("button");
   const rollbackBtn = document.createElement("button");
@@ -83,15 +95,17 @@ function paintFinished() {
   delBtn.value = "❌";
   delBtn.addEventListener("click", deleteFinished);
   rollbackBtn.value = "⏪";
-  span.innerText = "";
+  rollbackBtn.addEventListener("click", deleteFinished);
+  rollbackBtn.addEventListener("click", paintPending);
+  span.innerText = text;
   finishedLi.appendChild(span);
   finishedLi.appendChild(delBtn);
   finishedLi.appendChild(rollbackBtn);
   finishedLi.id = newID;
-  pdList.appendChild(finishedLi);
+  fnList.appendChild(finishedLi);
 
   const finishedObj = {
-    text: "",
+    text: text,
     id: newID
   };
   finisheds.push(finishedObj);
@@ -103,6 +117,10 @@ function saveFinished() {
 function loadFinished() {
   const loadedFinished = localStorage.getItem(FN_LS);
   if (loadedFinished !== null) {
+    const parsedFinished = JSON.parse(loadedFinished);
+    parsedFinished.forEach(function (finished) {
+      paintFinished(finished);
+    });
   }
 }
 
@@ -110,7 +128,6 @@ function handleSubmit(event) {
   event.preventDefault();
   const currentValue = pendingInputBox.value;
   paintPending(currentValue);
-  paintFinished();
   pendingInputBox.value = "";
 }
 
