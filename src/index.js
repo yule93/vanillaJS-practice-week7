@@ -21,6 +21,7 @@ function sendPending(event) {
   const text = li.querySelector("span").innerText;
   pdList.removeChild(li);
   paintFinished(text);
+  // localStorage의 pending의 list 상태를 저장하는 함수 적용
   const cleanPendings = pendings.filter(function (pending) {
     return pending.id !== parseInt(li.id);
   });
@@ -31,6 +32,7 @@ function deletePending(event) {
   const delBtn = event.target;
   const li = delBtn.parentNode;
   pdList.removeChild(li);
+  // localStorage의 pending의 list 상태를 저장하는 함수 적용
   const cleanPendings = pendings.filter(function (pending) {
     return pending.id !== parseInt(li.id);
   });
@@ -76,11 +78,26 @@ function loadPending() {
 
 // 이하는 finished 관련 함수
 
+function sendFinished(event) {
+  // 되감기 버튼 클릭 시 pending에 다시 재전송 하는 함수
+  const backBtn = event.target;
+  const li = backBtn.parentNode;
+  // li 내 span의 text값을 가져와 "pending" 목록에 저장
+  const text = li.querySelector("span").innerText;
+  fnList.removeChild(li);
+  paintPending(text); // pending 리스트에 다시 보내는 함수
+  // localStorage의 finished의 list 상태를 저장하는 함수 적용
+  const cleanFinisheds = finisheds.filter(function (finished) {
+    return finished.id !== parseInt(li.id);
+  });
+  finisheds = cleanFinisheds;
+  saveFinished();
+}
 function deleteFinished(event) {
   const delBtn = event.target;
   const li = delBtn.parentNode;
   fnList.removeChild(li);
-  const cleanFinisheds = pendings.filter(function (finished) {
+  const cleanFinisheds = finisheds.filter(function (finished) {
     return finished.id !== parseInt(li.id);
   });
   finisheds = cleanFinisheds;
@@ -95,8 +112,7 @@ function paintFinished(text) {
   delBtn.value = "❌";
   delBtn.addEventListener("click", deleteFinished);
   rollbackBtn.value = "⏪";
-  rollbackBtn.addEventListener("click", deleteFinished);
-  rollbackBtn.addEventListener("click", paintPending);
+  rollbackBtn.addEventListener("click", sendFinished);
   span.innerText = text;
   finishedLi.appendChild(span);
   finishedLi.appendChild(delBtn);
